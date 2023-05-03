@@ -1,0 +1,78 @@
+<dashboard version="1.1">
+  <label>Example for <set> and <unset></label>
+  <row>
+    <panel>
+      <table>
+        <title>Set sourcetype token</title>
+        <search>
+          <query>
+          index=_internal | stats count by sourcetype
+          </query>
+        <earliest>-1h</earliest>
+        <latest>now</latest>
+        </search>
+        <drilldown>
+          <!-- For the sourcetype field clicked: -->
+          <!-- Set token to display a chart -->
+          <!-- Unset token to display a table -->
+          <condition field="sourcetype">
+            <set token="sourcetype">$row.sourcetype$</set>
+            <set token="showChart">foo</set>
+            <unset token="showTable"></unset>
+          </condition>
+          <!-- For any other field clicked: -->
+          <!-- Set token to display a table -->
+          <!-- Unset token to display a chart -->
+          <condition field="*">
+            <set token="sourcetype">$row.sourcetype$</set>
+            <set token="showTable">foo</set>
+            <unset token="showChart"></unset>
+          </condition>
+        </drilldown>
+      </table>
+    </panel>
+    
+    <!-- Hide the html panel when either token is present -->
+    <!-- Click in the original table to set either token -->
+    <panel>
+      <html rejects="$showTable$, $showChart$">
+        <h2>Details</h2>
+          <div style="padding: 50px; margin: 0 auto; width: 350px;">
+          <div class="alert alert-warning">
+          <i class="icon-alert"/>
+            Click on a row in the table on the left to show details.
+          </div>
+        </div>
+      </html>
+      <!-- if showChart token is set, display results here -->
+      <chart depends="$showChart$">
+        <title>Details for $submitted:sourcetype|s$</title>
+        <search>
+          <query>
+          index=_internal sourcetype=$sourcetype|s$
+          | timechart count by sourcetype
+          </query>
+          <earliest>-1h</earliest>
+          <latest>now</latest>
+        </search>
+      </chart>
+      <!-- if showCTable token is set, display results here -->
+      <table depends="$showTable$">
+        <title>Details for $submitted:sourcetype|s$</title>
+        <search>
+          <query>
+          index=_internal sourcetype=$sourcetype|s$
+          | timechart bins=10 count by sourcetype
+          </query>
+          <earliest>-1h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
